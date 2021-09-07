@@ -2,6 +2,8 @@
 title: "基于K8s的Redis云原生实践综述"
 date: 2021-01-27T17:53:16+08:00
 draft: false
+tags: ["Redis", "云原生", "K8s"]
+categories: ["中间件", "K8s"]
 ---
 # 基于K8s的Redis云原生实践综述
 

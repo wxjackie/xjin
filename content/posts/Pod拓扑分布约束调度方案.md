@@ -2,6 +2,8 @@
 title: "K8s拓扑分布约束实现Redis高可用调度的方案设计"
 date: 2021-08-16T14:40:16+08:00
 draft: false
+tags: ["K8s", "Redis", "高可用"]
+categories: ["中间件", "K8s"]
 ---
 
 # K8s拓扑分布约束实现Redis高可用调度的方案设计

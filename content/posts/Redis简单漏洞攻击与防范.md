@@ -2,6 +2,8 @@
 title: "Redis的一个简单漏洞攻击与防范"
 date: 2019-11-16T12:40:16+08:00
 draft: false
+tags: ["Redis", "安全"]
+categories: ["中间件"]
 ---
 
 # Redis的一个简单漏洞攻击与防范
