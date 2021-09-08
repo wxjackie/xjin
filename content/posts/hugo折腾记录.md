@@ -24,6 +24,10 @@ draft: true
 
 - 可以尝试直接把图片放到posts下面，这样是否本地和远程都能访问？
 
+## 主题管理
+
+- papermod安装使用：https://github.com/adityatelange/hugo-PaperMod/wiki/Installation
+
 ## 待解决的问题
 
 - 文章摘要
