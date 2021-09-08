@@ -20,6 +20,10 @@ draft: true
   git add . && git commit -m "xxx" && git pus
   ```
 
+## 图片管理
+
+- 可以尝试直接把图片放到posts下面，这样是否本地和远程都能访问？
+
 ## 待解决的问题
 
 - 文章摘要
