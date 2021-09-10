@@ -30,7 +30,8 @@ draft: true
 
 ## 样式调整
 
-- 
+- `css/_variables.scss`里面的`$global-line-height: 1.8rem;`
+- `css/_page/_single.scss`中的`.author`的`display: none;`
 
 ## 博客收集
 

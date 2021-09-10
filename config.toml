@@ -1,6 +1,6 @@
 baseURL = "http://example.org/"
 
-# 网站语言, 仅在这里 CN 大写
+# defaultContentLanguage = "zh-cn"
 defaultContentLanguage = "en"
 languageCode = "en"
 # 是否包括中日韩文字
