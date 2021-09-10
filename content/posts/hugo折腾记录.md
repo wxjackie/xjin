@@ -28,6 +28,16 @@ draft: true
 
 - papermod安装使用：https://github.com/adityatelange/hugo-PaperMod/wiki/Installation
 
+## 样式调整
+
+- 
+
+## 博客收集
+
+- https://shuzang.github.io/ 使用loveit，更新频繁。
+- https://hugoloveit.com/ loveit主题官网
+- https://www.nashome.cn/categories/hugo/ 参考hugo一些功能实现
+
 ## 待解决的问题
 
 - 文章摘要
