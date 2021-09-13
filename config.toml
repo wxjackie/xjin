@@ -84,7 +84,7 @@ enableEmoji = true
       # 标题名称
       name = "XJin's Blog"
       # 你可以在名称 (允许 HTML 格式) 之前添加其他信息, 例如图标
-      pre = "\uF598"
+      pre = "\u23F3"
       # 你可以在名称 (允许 HTML 格式) 之后添加其他信息, 例如图标
       post = ""
       # LoveIt 新增 | 0.2.5 是否为标题显示打字机动画
