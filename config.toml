@@ -9,11 +9,13 @@ hasCJKLanguage = true
 title = "XJin's Blog"
 # 更改使用 Hugo 构建网站时使用的默认主题
 theme = "LoveIt"
+enableEmoji = true
 
 [params]
   # LoveIt 主题版本
   version = "0.2.X"
   keywords = ["Blog", "Tech"]
+  images = ["/app-touch-icon.png"]
 
   # 主页配置
   [params.home]
@@ -66,6 +68,27 @@ theme = "LoveIt"
     iconColor = "#5bbad5"
     # Windows v8-10磁贴颜色
     tileColor = "#da532c"
+  [params.footer]
+    enable = true
+    custom = ''
+    copyright = true
+    since = 2019
+  [params.header]
+    # 桌面端导航栏模式 ("fixed", "normal", "auto")
+    desktopMode = "fixed"
+    # 移动端导航栏模式 ("fixed", "normal", "auto")
+    mobileMode = "auto"
+    [params.header.title]
+      # LOGO 的 URL
+      logo = ""
+      # 标题名称
+      name = "XJin's Blog"
+      # 你可以在名称 (允许 HTML 格式) 之前添加其他信息, 例如图标
+      pre = "\uF598"
+      # 你可以在名称 (允许 HTML 格式) 之后添加其他信息, 例如图标
+      post = ""
+      # LoveIt 新增 | 0.2.5 是否为标题显示打字机动画
+      typeit = false
 [menu]
   [[menu.main]]
     identifier = "posts"
