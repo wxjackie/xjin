@@ -5,6 +5,7 @@ draft: false
 tags: ["Redis", "云原生", "K8s"]
 categories: ["中间件", "K8s"]
 summary: 介绍网易轻舟中间件基于Operator的Redis容器化实践，阐述为何Operator是“有状态应用容器化”的一个优雅的解决方案。
+typora-root-url: ../../static
 ---
 > 本文已同步发表于网易数帆官方知乎号：[网易数帆基于K8s的Redis云原生实践综述](https://zhuanlan.zhihu.com/p/348792138)
 

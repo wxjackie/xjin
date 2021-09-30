@@ -12,7 +12,7 @@ summary: 在很多开发自测的场景中，我们需要一个干净且可折�
 
 ## Kind简介
 
-Kind是"Kubernetes in Docker"的简写，即使用Docker容器运行本地K8s集群的工具，它将K8s所需要的所有组件，全部部署在一个 `Docker` 容器中，可以非常方便快速地搭建K8s集群。与Minikube等传统工具相比，Kind最大的优势就是它极简的依赖项：只依赖于Docker。
+Kind是"Kubernetes in Docker"的简写，即使用Docker容器运行本地K8s集群的工具，它将K8s所需要的所有组件，全部部署在一个 `Docker` 容器中，可以非常方便快速地搭建K8s集群。与Minikube等传统工具相比，Kind最大的优势就是它极简的依赖项：只依赖于Docker。在很多开发自测的场景中，我们需要一个干净且可折腾的K8s环境，比如要给节点打污点、开启K8s特性开关、测试指定K8s版本的特性支持、做一些调度功能验证等。
 
 Kind可以支持：
 

@@ -6,6 +6,7 @@ tags: ["K8s", "Redis", "高可用"]
 categories: ["中间件", "K8s"]
 featuredImagePreview: ""
 summary: 一种通过K8s 1.19版本的原生特性（Pod Topology Constraints）实现中间件的高可用调度的方案，无需对K8s扩展调度器做扩展。
+typora-root-url: ../../static
 ---
 
 > Redis Cluster在K8s上部署时，对于Pod的调度有一些特殊的高可用调度需求，默认的调度器无法满足需求，因此我们部门K8s团队先前自行开发了PaaS扩展调度器以支持一些中间件的高可用部署需求。

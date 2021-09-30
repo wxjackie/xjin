@@ -2,6 +2,7 @@
 title: "Hugo折腾记录"
 date: 2021-08-11T09:38:03+08:00
 draft: true
+typora-root-url: ../../static
 ---
 
 ## 手动发布流程
