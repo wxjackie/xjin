@@ -41,13 +41,7 @@ Mutating webhook可以在资源对象请求时，通过创建补丁来修改对�
 - K8s v1.16+：`admissionregistration.k8s.io/v1`
 - K8s v1.9：`admissionregistration.k8s.io/v1beta1`
 
-https://blog.hdls.me/15564491070483.html
-
-https://cloudnative.to/blog/mutating-admission-webhook/ 
-
 ## kubebuilder构建Webhook
-
-https://blog.hdls.me/15708754600835.html
 
 通常我们使用`kubebuilder`作为Operator的脚手架，它可以帮助我们方便的构建CRD和Controller的代码。同时，它也可以帮助我们在Operator中使用Admission webhooks。Kubebuilder帮助我们简化了在Operator中使用Webhook的操作流程， 我们仅仅需要编写`Defaulter`和`Validator`的逻辑即可。
 
@@ -137,5 +131,8 @@ func (r *App) ValidateUpdate(old runtime.Object) error {
 - 一个容器云管理平台中，可以自定义配额管理机制，比如根据Pod上的Label区分所属租户，对租户进行配额限制，超出租户配额限制，即使物理资源足够，也会拒绝Pod创建。
 - ......
 
+## 参考
 
-
+- https://blog.hdls.me/15564491070483.html
+- https://cloudnative.to/blog/mutating-admission-webhook/ 
+- https://blog.hdls.me/15708754600835.html
