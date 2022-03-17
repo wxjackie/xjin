@@ -2,7 +2,7 @@
 title: "Golang学习好文汇总"
 date: 2021-11-12T10:42:03+08:00
 draft: true
-typora-root-url: ../../static
+typora-root-url: ../../../static
 ---
 
 ## 常用功能
