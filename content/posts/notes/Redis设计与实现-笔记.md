@@ -71,25 +71,25 @@ Redis字典使用哈希表作为底层实现，一个哈希表有多个哈希表
 
 ```c
 typedef struct dictht {
-    dictEntry **table;
-    unsigned long size;
-    unsigned long sizemask;
-    unsigned long used;
+    dictEntry **table; // 哈希表数组
+    unsigned long size; // 哈希表大小
+    unsigned long sizemask; // 哈希表大小掩码，用于计算索引值，总是等于size-1
+    unsigned long used; // 该哈希表已有节点的数量
 } dictht;
 
 typedef struct dictEntry {
-    void *key;
-    union {
+    void *key; // 键
+    union {  // 值
         void *val;
         uint64_t u64;
         int64_t s64;
         double d;
     } v;
-    struct dictEntry *next;
+    struct dictEntry *next; // 指向下个哈希表节点，形成链表
 } dictEntry;
 ```
 
-Redis字典结构
+Redis中的字典结构
 
 ```c
 typedef struct dict {

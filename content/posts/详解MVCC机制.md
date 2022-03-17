@@ -6,3 +6,6 @@ typora-root-url: ../../static
 ---
 
 > MVCC，全称Multi-Version Concurrency Control，即多版本并发控制，常见于数据库管理系统中，对数据库的并发访问做控制，比如并发访问数据库时，对正在事务内处理的数据做多版本的管理，用来避免由于写操作的堵塞，而引发读操作失败的问题。
+
+- innoDB的MVCC实现原理：https://blog.csdn.net/flying_hengfei/article/details/106965517
+- MVCC阐述：https://segmentfault.com/a/1190000037557620
