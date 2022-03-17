@@ -93,13 +93,44 @@ Redis中的字典结构
 
 ```c
 typedef struct dict {
-    dictType *type;
-    void *privdata;
-    dictht ht[2];
-    long rehashidx; /* rehashing not in progress if rehashidx == -1 */
+    dictType *type; // 类型特定函数
+    void *privdata; // 私有数据
+    dictht ht[2]; // 哈希表
+    long rehashidx; // 记录rehash进度，没在做rehash该值为-1
     unsigned long iterators; /* number of iterators currently running */
 } dict;
 ```
+
+- type属性是一个指向`dictType`结构的指针，每个`dictType`结构保存了一组用于操作特定类型键值对的函数，Redis会为用途不同的字典设置不同的类型特定函数。type和privdata属性是针对不同类型的键值对，为创建多态字典而设置的。
+- privdata属性保存了需要传给那些类型特定函数的可选参数。
+- `ht`属性是一个包含两个项的数组，即两个`dictht`哈希表，一般情况下字典只使用`ht[0]`，`ht[1]`只会在对`ht[0]`哈希表进行`rehash`时使用。
+
+将一个键值对添加到字典，会先根据键计算出哈希值，再计算出索引值，将包含新键值对的哈希表节点放到哈希表数组的指定索引处。
+
+```c
+// 使用字典设置的哈希函数，计算出key的哈希值，Redis字典默认使用Murmur Hash
+hash = dict->type->hashFunction(key);
+// 使用sizemask和哈希值，计算出索引值，根据情况不同，使用的可能是ht[0]或ht[1]
+index = hash & dict->ht[x].sizemask;
+```
+
+Redis的哈希表解决**哈希冲突**采用的是**链地址法**，每个哈希表节点都有一个next指针，多个节点会组成一个单向链表，新节点会添加到表头，因为时间复杂度O(1)
+
+为了让哈希表的负载因子（load factor）维持在合理范围，需要有机制对哈希表的大小进行**扩展或收缩**。大致步骤如下：
+
+- 为`ht[1]`分配空间，如果是扩展，那么`ht[1]`的大小为第一个大于等于`ht[0].used*2`的2的n次方幂
+- 如果是收缩，那么`ht[1]`的大小为第一个大于等于`ht[0].used`的2的n次方幂
+- 将`ht[0]`上的值rehash到`ht[1]`上，即重新计算哈希值和索引值，放置到`ht[1]`
+
+什么时候进行扩展和收缩呢？
+
+1. 没有在执行`BGSAVE`或`BGREWRITEAOF`，并且负载因子大于1
+2. 正在执行`BGSAVE`或`BGREWRITEAOF`，并且负载因子大于5
+3. 负载因子小于0.1，会收缩
+
+渐进式hash，每次访问字典时，除了执行指定的操作外，还会顺带将`ht[0]`在`rehashidx`索引上的所有键值对rehash到`ht[1]`，是种分而治之的思想，避免集中rehahs带来的庞大计算量。
+
+### 4. Skip List 跳表
 
 
 
