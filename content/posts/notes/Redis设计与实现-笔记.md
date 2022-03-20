@@ -73,7 +73,7 @@ Redis字典使用哈希表作为底层实现，一个哈希表有多个哈希表
 
 ```c
 typedef struct dictht {
-    dictEntry **table; // 哈希表数组
+    dictEntry **table; // 哈希表数组，为什么这是个数组，参考：https://www.igiftidea.com/article/14210565837.html
     unsigned long size; // 哈希表大小
     unsigned long sizemask; // 哈希表大小掩码，用于计算索引值，总是等于size-1
     unsigned long used; // 该哈希表已有节点的数量
@@ -202,7 +202,73 @@ typedef struct zlentry {
 
 ### 7. 对象
 
+Redis数据库的每一个键值对的键和值都是一个对象（字符串对象、列表对象、哈希对象、集合对象、有序集对象，基于前面说的数据结构，而不是直接使用那些数据结构，可以针对不同场景使用不同数据结构实现，优化不同场景下的效率）
+
+```c
+typedef struct redisObject {  // 位域结构体，指定每个成员占用的位数
+    unsigned type:4;  // 类型
+    unsigned encoding:4;  // 编码
+    unsigned lru:LRU_BITS; /* LRU time (relative to global lru_clock) or
+                            * LFU data (least significant 8 bits frequency
+                            * and most significant 16 bits access time). */
+    int refcount; // 引用计数
+    void *ptr; // 指向底层实现数据结构的指针
+} robj;
+```
+
+每种类型的对象都至少使用了两种不同的编码，如下表（基于3.0）
+
+![image-20220320193344429](/img/notes/redis-design-obj-encoding.png)
+
+比如列表对象包含的元素数较少时，使用ziplist比双向链表更加省内存，并且以连续内存块方式保存的ziplist比双向链表载入缓存（计算机中除了内存还有高速缓存）更快。
+
+#### 字符串对象
+
+字符串对象是Redis五种类型对象中唯一会被其他对象嵌套的对象
+
+- 编码int：string对象保存的是long类型可以表示的整数值
+- 编码embstr：字符串值小于等于32字节，sds保存值。
+- 编码raw：字符串值大于32字节，sds保存值（raw编码会调用两次内存分配函数分别创建robj和sdshdr，embstr调用一次内存分配函数分配一个连续空间，依次包含robj和sdshdr）
+
+#### 列表对象
+
+编码可以是ziplist、linkedlist；使用ziplist编码需要列表对象同时满足所有字符串元素的长度都小于64字节，且元素数量小于512个，否则为linkedlist，这两个值都是可以配置的：`list-max-ziplist-value`和`list-max-ziplist-entries`
+
+#### hash对象
+
+编码可以是ziplist、hashtable；使用ziplist需要所有键值对的键和值都小于64字节，且键值对个数不超过512个，否则需要使用hashtable编码，也是可配的。
+
+#### 集合对象
+
+编码可以是intset、hashtable；使用intset需要集合保存的所有元素都是整数值，且保存的元素数量不超过512个，否则需要用hashtable编码。
+
+#### 有序集合对象
+
+编码可以是ziplist和skiplist；使用ziplist需要元素数量小于128个，且所有元素都小于64字节，否则需要用skiplist编码。
+
+skiplist编码的有序集合对象使用zset结构作为底层实现，一个zset结构同时包含一个字典和一个skiplist
+
+```c
+typedef struct zset {
+  zskiplist *zsl
+  dict *dict
+} zset;
+```
+
+同时使用字典和跳表是为了同时使用跳表的范围查找高效率和字典O(1)复杂度查找成员的特性。这两种数据结构都会通过指针来共享相同元素的成员和分值，所以不会产生重复成员和分值，不会因此浪费额外的内存。
+
+#### 对象其他概念
+
+- Redis有类型检查和命令多态，比如DEL、EXPIRE等命令是基于类型的多态，LLEN等命令的区别是基于编码的多态。
+- C本身不具备自动内存回收的能力，Redis在自己的对象系统中构建了一个**引用计数**技术实现了内存回收机制，在适当的时候自动释放对象并进行内存回收。
+- 除了用于实现引用计数内存回收机制之外，对象的refcount属性还带有对象共享的作用。目前Redis初始化服务时会创建1w个字符串对象，包含0-9999的所有整数值，当需要用这些值时，服务就会用共享对象而不是新建对象。
+- 对象通过lru属性记录自己最后一次被访问的时间，可用于计算对象空转时间，用于内存淘汰策略。
+
+## 二、单机数据库
 
 
 
+## 三、多机数据库
+
+## 四、独立功能实现
 
