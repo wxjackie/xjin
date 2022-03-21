@@ -266,9 +266,60 @@ typedef struct zset {
 
 ## 二、单机数据库
 
+### 9. DB 数据库
 
+Redis所有DB都保存在`server.h/redisServer`结构的db数组中，db数组每个元素都是一个`server.h/redisDb`结构，即一个数据库。
+
+```c
+typedef struct redisDb {
+    dict *dict;                 /* The keyspace for this DB */
+    dict *expires;              /* Timeout of keys with a timeout set */
+    dict *blocking_keys;        /* Keys with clients waiting for data (BLPOP)*/
+    dict *ready_keys;           /* Blocked keys that received a PUSH */
+    dict *watched_keys;         /* WATCHED keys for MULTI/EXEC CAS */
+    int id;                     /* Database ID */
+    long long avg_ttl;          /* Average TTL, just for stats */
+    list *defrag_later;         /* List of key names to attempt to defrag one by one, gradually. */
+} redisDb;
+```
+
+`redisDb`结构的dict字典保存了数据库中所有键值对，这个字典也叫**键空间（key space）**，也就是用户使用上感知的kv数据库。当使用Redis命令进行读写时，除了读写键空间，还会执行一些额外的维护操作，比如：更新hit和miss次数、更新LRU时间、惰性删除、针对被WATCH的键的dirty处理、数据库通知功能事件处理。
+
+#### 过期处理
+
+- Redis设置过期时间本质上都是`PEXPIREAT`命令，指定key过期的毫秒级时间戳
+- `redisDb`结构的`expires`字典保存了所有key的过期时间，也称它为过期字典；key为指向键对象的指针，value为long long类型整数，即毫秒级的过期时间戳。
+- Redis过期策略通过惰性删除`db.c/expireIfNeed`和定期删除`server.c/activeExpireCycle`两种配合实现；惰性删除为所有对key的访问，都会先检查其是否过期，如果过期则删除；定期删除会分为多次循环，随机获取一些key进行检查与执行删除，这个定期删除的循环有一定的时间上限。
+- Redis过期键不会对RDB和AOF产生影响，AOF删除Key时会追加DEL命令，AOF rewrite时也不会再写入过期的key。
+- slave发现过期key不会主从删除，需要等待master发来DEL命令进行删除，尽可能的保证主从一致性。
+
+### 10. RDB持久化
+
+`redisServer`结构中会保存所有用`save`配置的自动保存rdb条件，任意一个条件满足，服务会自动执行BGSAVE
+
+### 11. AOF持久化
+
+- AOF保存所有修改DB的写命令，所有命令都以Redis命令请求协议（纯文本协议）的格式保存
+- 命令请求会先到AOF缓冲区中(redisServer->aof_buf)，之后再定期写入并同步到AOF文件
+- appendfsync可选always、everysec、no，不同选项对于性能和数据丢失有不同程度的影响。
+- AOF重写是通过读取DB中的键值对实现的，不会对原有AOF读取和分析。
+- 在执行`BGREWRITREAOF`命令时，Redis会维护一个**AOF重写缓冲区**，它会在子进程创建新AOF文件期间，记录执行的所有写命令，当子进程完成AOF文件创建后，服务会将rewrite buf中所有内容追加到新AOF文件上；最后用新AOF替换旧AOF。
+
+
+
+### 12. 事件
+
+### 13. 客户端
+
+### 14. 服务器
 
 ## 三、多机数据库
+
+### 15. 复制
+
+### 16. Sentinel
+
+### 17. 集群
 
 ## 四、独立功能实现
 
