@@ -305,13 +305,58 @@ typedef struct redisDb {
 - AOF重写是通过读取DB中的键值对实现的，不会对原有AOF读取和分析。
 - 在执行`BGREWRITREAOF`命令时，Redis会维护一个**AOF重写缓冲区**，它会在子进程创建新AOF文件期间，记录执行的所有写命令，当子进程完成AOF文件创建后，服务会将rewrite buf中所有内容追加到新AOF文件上；最后用新AOF替换旧AOF。
 
-
-
 ### 12. 事件
+
+Redis服务器是一个**事件驱动**程序，处理文件事件（file event）和时间事件（time event）
+
+- 文件事件：Redis服务通过套接字与客户端连接，文件事件就是对套接字操作的抽象。当套接字变为可应答（acceptable）、可写（writable）和可读（readable），相应的文件事件就会产生。分为`AE_READABLE`读事件和`AE_WRITEABLE`写事件两种。
+
+  时间事件：分为定时事件（只在指定时间执行一次）和周期事件，Redis一般只有`serverCron`函数一个周期事件。
+
+Redis基于Reactor模式开发了自己的网络事件处理器，被称为文件事件处理器（file event handler）；它使用**IO多路复用**程序来同时监听多个套接字，并根据套接字产生的事件类型关联不同的事件处理器。当被监听的套接字准备好应答、读取、写入、关闭等操作时，对应文件事件就会产生，handler就会调用之前关联好的处理器去处理这些事件。
+
+事件调度和执行伪代码：
+
+```c
+// ae.c/aeProcessEvents
+def aeProcessEvents():
+	// 获取到达时间离当前最近的时间事件
+	time_event = aeSearchNearestTimer()
+  // 计算还有多久到达
+  remaind_ms = time_event.when - unix_ts_now()
+  if remaind_ms < 0:
+  	remaind_ms = 0
+  // 根据remaind_ms创建timeval结构
+  timeval = create_timeval_with_ms(remaind_ms)
+  // 阻塞等待文件事件产生，如果remaind_ms为0，那么会调用后马上返回，不阻塞
+  aeApiPoll(timeval)
+  
+  // 处理文件事件
+  processFileEvents()
+  // 处理时间事件
+  processTimeEvents()
+```
+
+Redis文件事件和时间事件为合作关系，会被轮流处理，一般不会发生抢占。时间事件处理一般会被设定时间晚些。
 
 ### 13. 客户端
 
+`redisServer`结构中用`clients`链表连接起多个客户端状态，新添加的客户端会被放到链表的末尾。客户端的属性分为两类，通用的属性和特定功能相关的属性。
+
+一个命令从客户端发出经历的具体流程：`redisClient`的输入缓冲区（一个SDS）追加Redis协议字符串形式的命令，服务从input buffer中获取内容并解析命令，将得到的命令和命令参数保存，根据`argv[0]`保存的值，在命令表中查找命令对应的命令实现函数，成功找到`redisCommand`后，将`redisClient`的`cmd`指针指向这个结构。之后服务就可根据`argv`和`cmd`调用命令实现函数，执行指令。
+
+客户端flags属性使用不同标志表示客户端角色，以及客户端当前所处的状态。
+
+输入缓冲区记录了客户端发送的命令请求，缓冲区大小不能超过1GB。
+
+客户端有固定大小缓冲区和可变大小缓冲区两种缓冲区可用，前者大小固定16KB，后者是个链表。如果输出缓冲区超过硬性限制，客户端会被立即关闭；在一定时间内一直高于软性限制，也会被关闭。
+
+两个伪客户端：处理Lua的客户端在Redis初始化时创建，会一直存在到服务关闭；载入AOF的客户端在开始载入时初始化，载入完毕后自动关闭。
+
 ### 14. 服务器
+
+- serverCron默认每隔100ms执行一次，主要工作包括：更新服务器状态信息(时间缓存、LRU时钟、估算的OPS)、管理客户端资源和数据库状态、清除过期Key、处理接收的SIGTERM信号、检查并执行持久化操作等。
+- Redis服务从启动到能处理请求需要执行以下步骤：初始化服务器状态；载入服务器配置；初始化服务器数据结构；根据AOF和RDB还原数据；启动事件循环。
 
 ## 三、多机数据库
 
