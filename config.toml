@@ -12,7 +12,7 @@ theme = "LoveIt"
 enableEmoji = true
 
 [params]
-  # LoveIt 主题版本
+  # LoveIt 主题版本，配置参考官网：https://hugoloveit.com/zh-cn/theme-documentation-basics/#basic-configuration
   version = "0.2.X"
   keywords = ["Blog", "Tech"]
   images = ["/app-touch-icon.png"]
@@ -55,6 +55,13 @@ enableEmoji = true
     Email = "jereowang@163.com"
     RSS = true
 
+  # 文章页面配置
+  [params.page]
+    [params.page.code]
+      # 是否显示代码块的复制按钮
+      copy = false
+      # 默认展开显示的代码行数
+      maxShownLines = 20  
   [params.app]
     # 当添加到 iOS 主屏幕或者 Android 启动器时的标题, 覆盖默认标题
     title = "XJin Blog"
