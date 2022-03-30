@@ -22,4 +22,4 @@ git add . &&
 git commit -m "public $msg"
 git push
 
-echo "All Done!"
+echo "======= All Done! ==========="
