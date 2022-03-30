@@ -1,7 +1,10 @@
 ---
-title: "浅谈Kubernetes集群联邦"
+title: "探索Kubernetes集群联邦方案"
 date: 2022-03-07T20:17:03+08:00
-draft: true
+draft: false
+tags: ["K8s", "高可用"]
+categories: ["K8s"]
+summary: 分析K8s集群联邦机制的需求以及社区主流的解决方案。
 typora-root-url: ../../static
 ---
 
@@ -158,6 +161,28 @@ KubeFed在V1基础上移除了Federation API Server和ETCD，通过定义几中C
 
 ## Karmada
 
+Karmada是华为开源的多集群管理框架，它是KubeFed的一个延续，集成了Federation V1和V2的一些基本概念，它也是目前社区中比较活跃和成熟的集群联邦框架。下面为Karmada架构图：
+
+![karmada-arch](/img/discuss-k8s-federation/karmada-arch.png)
+
+主要组件：
+
+- Karmada API Server：一个独立的API Server，绑定了一个单独的ETCD用来存储联邦资源。
+- Karmada Controller Manager：多个Karmada Controller集合，只处理Karmada联邦资源，监听Karmada API Server中的资源对象并与子集群API Server通信。
+  - Cluster Controller：将子集群加入Karmada联邦，通过Cluster资源管理子集群的生命周期。
+  - Policy Controller：监视PropagationPolicy资源，会选择与 resourceSelector 匹配的一组资源，并为每个资源对象创建 ResourceBinding。
+  - Binding Controller：监视ResourceBinding资源，针对各个子集群创建对应的资源对象的Work资源。
+  - Execution Controller：监视Work资源，将Work资源包含的资源分配给各个子集群。
+- Karmada Scheduler：提供可扩展的，跨集群级别的调度策略。
+
+Karmada工作流程图如下，配合上面对于各个Karmada Controller的解释，基本可以理解这张图的处理流程：
+
+![Karmada-process](/img/discuss-k8s-federation/karmada-process.png)
+
+相较于KubeFed，Karmada保留了K8s原生资源对象，无需像KubeFed一样定义`FederatedXXX`等CRD，而是引入了PropagationPolicy 和 OverridePolicy实现资源传播和字段覆写。
+
+站在Operator开发者的角度，我认为Karmada这种方式能够更易于维护，因为Operator本身也要引入CRD，创建独立的 PropagationPolicy 和 OverridePolicy 可以简化引入新资源需要的步骤，避免引入更多的FederatedCRD，只是缺少了FederatedCRD来收集汇总多集群的资源状态，但这个完全可以通过其他方式实现，比如在控制平面新增一个简单的Controller（听起来复杂，但实际情况下往往是必要的。）
+
 ## 总结
 
 ## 参考
@@ -165,3 +190,5 @@ KubeFed在V1基础上移除了Federation API Server和ETCD，通过定义几中C
 - [集群联邦（Cluster Federation）](https://jimmysong.io/kubernetes-handbook/practice/federation.html)
 - [Federation V1](https://feisky.gitbooks.io/kubernetes/content/components/federation.html)
 - [Karmada Repo](https://github.com/karmada-io/karmada)
+- [Kubernetes、集群联邦和资源分发](https://draveness.me/kuberentes-federation/)
+- [多集群项目使用介绍](https://xinzhao.me/posts/kubernetes-multi-cluster-projects/#karmada)
