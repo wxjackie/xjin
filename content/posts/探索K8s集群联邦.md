@@ -181,9 +181,29 @@ Karmada工作流程图如下，配合上面对于各个Karmada Controller的解�
 
 相较于KubeFed，Karmada保留了K8s原生资源对象，无需像KubeFed一样定义`FederatedXXX`等CRD，而是引入了PropagationPolicy 和 OverridePolicy实现资源传播和字段覆写。
 
-站在Operator开发者的角度，我认为Karmada这种方式能够更易于维护，因为Operator本身也要引入CRD，创建独立的 PropagationPolicy 和 OverridePolicy 可以简化引入新资源需要的步骤，避免引入更多的FederatedCRD，只是缺少了FederatedCRD来收集汇总多集群的资源状态，但这个完全可以通过其他方式实现，比如在控制平面新增一个简单的Controller（听起来复杂，但实际情况下往往是必要的。）
+站在Operator开发者的角度，我认为Karmada这种方式能够更易于维护，因为Operator本身也要引入CRD，创建独立的 PropagationPolicy 和 OverridePolicy 可以简化引入新资源需要的步骤，避免引入更多的FederatedCRD，只是缺少了FederatedCRD来收集汇总多集群的资源状态，但这个完全可以通过其他方式实现，在有需要的情况下可以在控制平面新增一个简单的Controller和CRD单独用来维护状态（听起来好像更复杂，但实际情况下这个Controller往往是必要的。）
 
-## 总结
+## 总结和展望
+
+通过分析大规模单K8s集群可能存在的问题，解读K8s集群联邦机制，分析几个社区主流方案后，我们发现，对于无状态服务，比如原先只需Deployment部署的Web服务，KubeFed和Karmada都是完全可以满足需求的（当然，跨集群服务发现需要额外实现，这个不在本文的讨论范围）。
+
+但是，对于较为复杂的有状态应用，比如使用Operator机制管理的容器化中间件Redis、Kafka、Zookeeper，对于这些CRD资源，联邦框架目前最多只能帮我们做**资源传播**和**字段覆写**，但对于中间件Operator，这些是远远不够的。
+
+以Redis举例，按照集群联邦的设计理念，要尽量把逻辑下放到子集群，那么联邦集群要做的就是把Redis集群CR资源传播到子集群。假如我有联邦集群拥有3个子集群，提交一个Redis CR到联邦控制面，如下：
+
+```yaml
+apiVersion: redis.xjin.wang/v1
+kind: RedisCluster
+metadata:
+  name: redis-cluster-1
+spec:
+	shards: 5
+  ... ...
+```
+
+那么联邦机制会帮我们把这个CR分成1分片、2分片、2分片的3个Redis CR分别下发到3个子集群，由三个子集群中的Redis Operator分别调谐（Reconcile），组建Redis集群。这时问题就来了，我们想要的是Redis集群各个分片的主从跨K8s集群，这样才能实现跨集群维度的高可用，而不是分片分布在各个集群。而且，不同集群的Redis分片如何互相发现也是个问题，在单集群场景中，我们是Operator主动对Redis实例发起`CLUSTER MEET`命令组建集群和扩容时加入新节点，**但在集群联邦中，各个子集群并没有全局的视角去感知其他子集群的Pod等资源信息**，仍需要我们从联邦控制面感知全局的状态并下发到各个子集群。直觉告诉我们这也并不是一个优雅的方案。
+
+目前主流的集群联邦框架，对于复杂的有状态应用还缺少统一且优雅的处理机制，随着K8s生态不断成熟，各种复杂应用的逐渐迁移，相信集群联邦的机制也会涌现出更为成熟的解决方案。
 
 ## 参考
 
