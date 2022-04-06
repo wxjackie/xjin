@@ -20,7 +20,7 @@ typora-root-url: ../../static
 - 因为调度层面隔离较混乱（业务可能会自己配置NodeSelector、Affinity等），每个K8s节点宕机都需要所有运维人员关注。
 - 单K8s集群纳管**同城多机房**的节点，在节点上打AZ Label作为标识，每个需要多AZ高可用的业务都需要根据AZ Label自行设计调度逻辑。如下图所示，一个中间件的Operator，需要在实现逻辑中设计Pod在不同AZ的高可用调度。
 
-![image-20220329191909410](/img/discuss-k8s-federation/single-cluster.png)
+![single-cluster](/img/discuss-k8s-federation/single-cluster.png)
 
 简单分析下这些问题：单个K8s集群的基础设置是有可能被业务影响导致不稳定进而影响其他业务、每个业务的高可用调度的实现水平、验证完备程度也是不同的。可以总结为**故障隔离较差、跨机房高可用缺乏硬性限制**。
 
