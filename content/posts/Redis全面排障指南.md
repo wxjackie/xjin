@@ -1,10 +1,13 @@
 ---
 title: "Redis全面排障指南"
-date: 2021-10-19T09:38:03+08:00
-draft: true
+date: 2021-12-19T09:38:03+08:00
+draft: false
+tags: ["Redis", "运维"]
+categories: ["中间件"]
+summary: 根据过往经验，总结了一套Redis问题排查的思路图，希望能够帮助开发&运维在碰到Redis问题对着一张图便可以找到问题根源。
 typora-root-url: ../../static
 ---
 
-## 参考
+> 根据过往经验，总结了一套Redis问题排查的思路图，希望能够帮助开发&运维在碰到Redis问题对着一张图便可以找到问题根源。
 
-- redis变慢如何处理：https://mp.weixin.qq.com/s/O6nQaE1FTuEDXN9ikXTs_w
+![redis-diag-login](/img/redis-diag-logic/redis-diag-logic-tree.png "redis排障指南")
