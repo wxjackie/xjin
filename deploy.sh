@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -eu
 # 渲染
 hugo
 
