@@ -2,7 +2,7 @@
 title: "ElasticSearch学习笔记（一）"
 date: 2021-09-08T09:58:44+08:00
 draft: true
-typora-root-url: ../../static
+typora-root-url: ../../../static
 ---
 
 ## 逻辑设计与物理设计
