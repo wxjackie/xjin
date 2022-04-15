@@ -28,9 +28,9 @@ Kind内部使用了 `Kubeadm` 这个工具来做集群的部署，包括高可�
 
 ## Kind安装与基本使用
 
-这里默认本机环境已经安装好了Docker，安装Docker的安装文档可直接参考官方文档：https://docs.docker.com/get-docker/
+这里默认本机环境已经安装好了Docker，安装Docker的安装文档可直接参考官方文档：[https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/)
 
-如果要通过命令行与K8s进行交互，需要安装`kubectl`，安装方法可参考：https://kubernetes.io/docs/tasks/tools/#install-kubectl
+如果要通过命令行与K8s进行交互，需要安装`kubectl`，安装方法可参考：[https://kubernetes.io/docs/tasks/tools/#install-kubectl](https://kubernetes.io/docs/tasks/tools/#install-kubectl)
 
 下面介绍在Linux环境下通过Kind二进制文件的安装方式，首先下载二进制并移动到PATH路径中
 
