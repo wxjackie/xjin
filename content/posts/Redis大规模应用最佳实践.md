@@ -233,6 +233,8 @@ Redis容器化（Redis On K8s）相关的开发也是我目前的主要工作。
 
 ## 6. 业务侧
 
+> 目前我个人的经验主要是面向Redis的优化、管控、运维，在使用上的经验广度还不够，下面根据与业务沟通了解、网络资料学习的情况做简要的梳理，后续将持续补充和完善Redis高效的使用方式。
+
 ### 双写一致性
 
 业务上使用Redis都会需要考虑，如何保证数据库和缓存中的一致性的问题。最简单常用的方式就是Cache Aside模式，下面简要介绍下这种模式的读写流程。
@@ -250,11 +252,11 @@ Cache Aside模式还要考虑DELETE失败的问题，本质上这还是非原子
 
 ### 分布式锁
 
-关于Redis分布式锁的解决方案很多，下面介绍两个方案
+关于Redis分布式锁的解决方案很多，我个人主要经验在优化、管控侧，业务侧了解的相对较少，经过社区中的学习，下面介绍两个方案
 
 方案一：`SET lock_key $unique_id EX $expire_time NX`
 
-- `$unique_id`指当前线程的UID，`$expire_time`为锁过期时间，可以单独开启一个守护线程对锁进行过期检查和自动续期。（如果有可重入锁的需求，可以将值换成整数，使用INCR命令）
+- `$unique_id`指当前线程的UID，`$expire_time`为锁过期时间，可以单独开启一个守护线程对锁进行过期检查和自动续期。（如果有可重入锁的需求，可以使用hash结构）
 - 为了让检查时释放锁的GET和DELETE为原子操作，可以通过Lua脚本实现。
 
 方案二：红锁（RedLock）具体可参考：[Distributed Locks with Redis](https://redis.io/docs/reference/patterns/distributed-locks/)
@@ -267,16 +269,46 @@ Cache Aside模式还要考虑DELETE失败的问题，本质上这还是非原子
 4. 加锁成功，去操作共享资源（例如修改 MySQL 某一行，或发起一个 API 请求）
 5. 加锁失败，向「全部节点」发起释放锁请求（前面讲到的 Lua 脚本释放锁）
 
-一般的场景下，个人认为方案一就足够了，红锁的实施成本很高。如果有对于性能要求不高、强一致性的锁需求，可以考虑使用Zookeeper。
+一般的场景下，个人认为方案一就足够了，红锁的实施成本很高。如果有对于性能要求不高、强一致性的锁需求，可以考虑使用ZooKeeper。
 
 ### 巧用数据结构
 
-- geohash用于地理位置
-- zset用于排行榜等
-- bitmap
-- 布隆过滤器
+Redis的基础结构的简单使用场景如下：
+
+- `list`：消息队列（`lpush`、`brpop`）、内容列表
+- `set`：作为实体的标签、社交平台的关注/被关注等有对于交集（`sinter`）需求的场景。
+- `hash`：保存对象实体信息、分布式可重入锁（Redission的做法）
+- `zset`：排行榜（`zinterstore`实现多维度聚合）
+
+这些场景网络上资料很多，这里不再赘述，下面介绍一些进阶的数据结构或模块用途。
+
+使用**GEO功能**。可以实现地理位置相关业务，Redis的GEO功能是基于`zset`和`geohash`实现的。
+
+添加地理位置信息：`geoadd key longitude latitude member [longitude latitude membe ...]`
+
+`longitude`、`latitude`、`member`分别为经度、维度、成员名。比如添加北京的位置：`geoadd cities 116.28 39.55 beijing`
+
+- 获取地理位置：`geopos key member [member ...]`
+- 获取两个地理位置的距离：`geodist key member1 member2 [unit]`，unit单位可以选择m、km等。
+- 获取指定范围能的地址位置集合：`georadius key longitude latitude radiusm`，该命令参数较多，使用时请查阅[Redis GEO官方文档](https://redis.io/commands/georadius/)
+- 获取geohash：`geohash key member [member ...]`，将位置转换成字符串（采用前缀匹配算法），字符串越长位置越精确，GEO功能的一些位置排序就是依赖`geohash`和`zset`实现的。
+
+使用**Bitmap实现用户状态记录**，参考该文章：[巧用 Bitmap 实现亿级数据统计](https://segmentfault.com/a/1190000040177140)
+
+使用`Hyperloglog`高效（非常节省内存）统计总数，参考该文章：[巧用 Redis Hyperloglog，轻松统计 UV 数据](https://segmentfault.com/a/1190000020523110)
 
 ### 避免缓存击穿、穿透
 
+- 缓存击穿：某个热点Key的失效，在这个key失效的瞬间，持续的大并发请求直接打到数据库。
+- 缓存穿透：指不断请求**缓存和数据库中都没有的数据**，每次请求都要到数据库去，可能会导致短时间内大量请求都打到数据库上，导致数据库压力升高。
 
+避免缓存击穿的方案：
 
+1. 引入互斥锁，只允许一个线程去请求数据库和重建缓存，其他请求将循环等待直到从Redis中能获取数据。
+2. 热点Key设置为“永不过期”，即要么不设置过期时间，要么由工作线程定期延长过期时间。
+3. 业务代码实现SingleFilght模式（本质上也是一种互斥锁）
+
+避免缓存穿透的方案：
+
+1. 对于在DB获取不到数据的Key，缓存一个空对象，设置较短的过期时间，可以缓和DB的压力（需要业务考虑数据不一致的问题）
+2. 使用布隆过滤器。

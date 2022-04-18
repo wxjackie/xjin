@@ -40,6 +40,8 @@ chmod +x ./kind
 mv ./kind /some-dir-in-your-PATH/kind
 ```
 
+macOS安装Kind直接使用`brew install kind`即可。
+
 最简单的搭建命令
 
 ```shell
@@ -78,6 +80,7 @@ nodes:
 - role: control-plane
 - role: control-plane
 - role: worker
+	# 可以在此单独指定镜像版本，也可以在创建命令中指定版本。
 	image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
 - role: worker
   image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
@@ -88,7 +91,7 @@ nodes:
 然后使用上述配置文件创建Kind集群
 
 ```shell
-kind create cluster --config kind-cluster.yaml
+kind create cluster --config kind-cluster.yaml --image kindest/node:v1.20.0
 ```
 
 创建完成后，使用`kubectl get no`就可以看到多节点K8s集群了。
