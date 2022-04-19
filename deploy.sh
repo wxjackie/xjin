@@ -12,14 +12,14 @@ then
 fi
 echo "===== Begin push source repo ======="
 git add . &&
-git commit -m "$msg"
+git commit -m "$msg $(hostname)"
 git push
 
 echo "===== Begin push public repo ======="
 # 提交博客公开仓库
 cd public/
 git add . &&
-git commit -m "public $msg"
-git push
+git commit -m "public $msg $(hostname)"
+git push -ff
 
 echo "======= All Done! ==========="
