@@ -1,9 +1,12 @@
 ---
 title: "CPU缓存和伪共享对Golang的影响"
 date: 2021-08-26T16:44:03+08:00
-draft: true
+draft: false
 tags: ["Golang", "底层原理"]
 categories: ["Golang"]
+summary: 站在CPU高速缓存的角度，分析Cache伪共享在Golang执行效率上的影响。
+code:
+  maxShownLines: 200
 typora-root-url: ../../static
 ---
 
