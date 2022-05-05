@@ -80,7 +80,7 @@ nodes:
 - role: control-plane
 - role: control-plane
 - role: worker
-	# 可以在此单独指定镜像版本，也可以在创建命令中指定版本。
+	# 可以在此单独指定镜像版本
 	image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
 - role: worker
   image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
@@ -88,10 +88,31 @@ nodes:
   image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
 ```
 
+执行命令创建集群即可：
+
+```shell
+kind create cluster --config kind-cluster.yaml
+```
+
+也可以不在配置YAML里面写镜像，通过命令指定版本，集群YAML如下：
+
+```yaml
+# a cluster with 3 control-plane nodes and 3 workers
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+- role: control-plane
+- role: control-plane
+- role: worker
+- role: worker
+- role: worker
+```
+
 然后使用上述配置文件创建Kind集群
 
 ```shell
-kind create cluster --config kind-cluster.yaml --image kindest/node:v1.20.0
+kind create cluster --config kind-cluster.yaml --image kindest/node:v1.21.10
 ```
 
 创建完成后，使用`kubectl get no`就可以看到多节点K8s集群了。
