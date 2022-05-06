@@ -5,6 +5,7 @@ draft: false
 tags: ["K8s", "高可用"]
 categories: ["K8s"]
 summary: 分析K8s集群联邦机制的需求以及社区主流的解决方案。
+weight: 2
 typora-root-url: ../../static
 ---
 

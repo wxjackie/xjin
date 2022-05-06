@@ -6,6 +6,7 @@ tags: ["Redis", "最佳实践"]
 categories: ["中间件"]
 summary: 介绍Redis在大规模应用时需要注意的事项和使用建议。
 typora-root-url: ../../static
+weight: 2
 toc:
   auto: false
 ---
