@@ -28,6 +28,7 @@ typora-root-url: ../../static
 ## 主题管理
 
 - papermod安装使用：https://github.com/adityatelange/hugo-PaperMod/wiki/Installation
+- 文章前置设置，可参考：https://bore.vip/archives/dd06a4b1/#LoveIt%E4%B8%BB%E9%A2%98%E5%AE%98%E6%96%B9%E5%89%8D%E7%BD%AE%E5%8F%82%E6%95%B0
 
 ## 样式调整
 
